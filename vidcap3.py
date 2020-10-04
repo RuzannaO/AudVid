@@ -81,7 +81,7 @@ class recVIdAud:
         final.save("./final1.mp4")
 
 a = recVIdAud()
-# a.start_both()
-a.combine()
+a.start_both()
+# a.combine()
 
 
