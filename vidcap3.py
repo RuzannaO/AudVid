@@ -46,11 +46,6 @@ class recVIdAud:
                         frames_per_buffer=self.CHUNK)
 
         print("* recording")
-        frames = []
-
-        # time.sleep(3.36)
-
-
         while self.status == 1:
             data = self.stream.read(self.CHUNK)
             self.frames.append(data)
