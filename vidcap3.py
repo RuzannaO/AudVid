@@ -3,13 +3,9 @@ import pyaudio
 import threading
 import wave
 from mhmovie.code import *
+import time
 
 class recVIdAud:
-    def __init__(self, chunk=3024, frmat=pyaudio.paInt16, channels=2, rate=44100, py=pyaudio.PyAudio()):
-
-        self.p = py
-        self.frames = []
-        self.st = 1
 
     def vidcap(self):
         self.status=1
@@ -19,7 +15,9 @@ class recVIdAud:
         while(cap.isOpened()):
             ret,frame=cap.read()
             if ret==True:
-                frame = cv2.GaussianBlur(frame, (15,15), cv2.BORDER_DEFAULT)
+                frame = cv2.GaussianBlur(frame, (15,15), cv2.BORDER_DEFAULT,100)
+                # frame = cv2.GaussianBlur(frame,(19,19),sigmaX=0,borderType=cv2.BORDER_DEFAULT)
+                # frame = cv2.blur(frame,(39,39))
                 out.write(frame)
                 cv2.imshow('output',frame)
                 if (cv2.waitKey(1) & 0xFF == ord('q')):
@@ -30,16 +28,18 @@ class recVIdAud:
 
 
     def audcap(self):
-        self.CHUNK = 1024
+        self.CHUNK = 3024
         self.FORMAT = pyaudio.paInt16
         self.CHANNELS = 2
         self.RATE = 44100
         self.RECORD_SECONDS = 5
         self.WAVE_OUTPUT_FILENAME = "output.wav"
+        self.frames=[]
         self.status=1
-        p = pyaudio.PyAudio()
+        # time.sleep(3)
+        self.py = pyaudio.PyAudio()
 
-        self.stream = p.open(format=self.FORMAT,
+        self.stream = self.py.open(format=self.FORMAT,
                         channels=self.CHANNELS,
                         rate=self.RATE,
                         input=True,
@@ -47,6 +47,10 @@ class recVIdAud:
 
         print("* recording")
         frames = []
+
+        # time.sleep(3.36)
+
+
         while self.status == 1:
             data = self.stream.read(self.CHUNK)
             self.frames.append(data)
@@ -56,19 +60,21 @@ class recVIdAud:
 
         self.stream.stop_stream()
         self.stream.close()
-        self.p.terminate()
+        self.py.terminate()
 
         wf = wave.open(self.WAVE_OUTPUT_FILENAME, 'wb')
         wf.setnchannels(self.CHANNELS)
-        wf.setsampwidth(p.get_sample_size(self.FORMAT))
+        wf.setsampwidth(self.py.get_sample_size(self.FORMAT))
         wf.setframerate(self.RATE)
         wf.writeframes(b''.join(self.frames))
         wf.close()
 
 
     def start_both(self):
-        t1=threading.Thread(target=self.vidcap)
+
+
         t2=threading.Thread(target=self.audcap)
+        t1=threading.Thread(target=self.vidcap)
         t1.start()
         t2.start()
 
